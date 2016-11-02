@@ -1,0 +1,13 @@
+/puho/deployment/nginx/logs/*.log {
+        daily
+        missingok
+        rotate 14
+        compress
+        delaycompress
+        notifempty
+        create 640 root root
+        sharedscripts
+        postrotate
+               docker exec nginx ./restartlog.sh
+        endscript
+}

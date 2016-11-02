@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>baseimages</artifactId>
+        <groupId>com.optiscangroup.docker</groupId>
+        <version>1.3-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>centos-openresty</artifactId>
+    <packaging>pom</packaging>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>io.fabric8</groupId>
+                <artifactId>docker-maven-plugin</artifactId>
+                <configuration>
+                    <images>
+                        <image>
+                            <name>centos-openresty</name>
+                            <registry>${docker.repo}</registry>
+                            <build>
+                                <maintainer>sergey.antonov@optiscangroup.com</maintainer>
+                                <from>centos:6</from>
+                                <tags>
+                                    <tag>${build.version}</tag>
+                                </tags>
+                                <runCmds>
+                                    <run>yum -y update &amp;&amp; yum -y install logrotate tar gcc pcre-devel zlib-devel perl openssl-devel &amp;&amp; mkdir -p /tmp/build &amp;&amp; cd /tmp/build &amp;&amp; curl https://openresty.org/download/openresty-1.9.7.3.tar.gz | tar xvz &amp;&amp; cd /tmp/build/openresty-1.9.7.3 &amp;&amp; ./configure --with-http_sub_module --with-luajit &amp;&amp; make &amp;&amp; make install &amp;&amp; cd / &amp;&amp; rm -rf /tmp/build &amp;&amp; yum clean all</run>
+                                </runCmds>
+                                <assembly>
+                                    <basedir>/</basedir>
+                                    <inline>
+                                        <fileSets>
+                                            <fileSet>
+                                                <directory>${project.basedir}/src/main/resources</directory>
+                                                <includes>
+                                                    <include>restartlog.sh</include>
+                                                </includes>
+                                                <outputDirectory>/usr/local/openresty/nginx/sbin</outputDirectory>
+                                                <fileMode>0755</fileMode>
+                                                <lineEnding>unix</lineEnding>
+                                            </fileSet>
+                                        </fileSets>
+                                    </inline>
+                                </assembly>
+                                <volumes>
+                                    <volume>/usr/local/openresty/nginx/logs</volume>
+                                    <volume>/usr/local/openresty/nginx/conf</volume>
+                                </volumes>
+                                <ports>
+                                    <port>80</port>
+                                    <port>443</port>
+                                    <port>8080</port>
+                                </ports>
+                                <entryPoint>/usr/local/openresty/nginx/sbin/nginx -g "daemon off;"</entryPoint>
+                            </build>
+                        </image>
+                    </images>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

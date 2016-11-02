@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>baseimages</artifactId>
+        <groupId>com.optiscangroup.docker</groupId>
+        <version>1.3-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>alpine-glibc</artifactId>
+
+    <properties>
+        <alpine_version>3.4</alpine_version>
+        <glibc_version>2.23-r3</glibc_version>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>io.fabric8</groupId>
+                <artifactId>docker-maven-plugin</artifactId>
+                <configuration>
+                    <images>
+                        <image>
+                            <name>alpine-glibc</name>
+                            <registry>${docker.repo}</registry>
+                            <build>
+                                <maintainer>sergey.antonov@optiscangroup.com</maintainer>
+                                <from>alpine:${alpine_version}</from>
+                                <tags>
+                                    <tag>${build.version}</tag>
+                                </tags>
+                                <env>
+                                    <ALPINE_GLIBC_PACKAGE_VERSION>${glibc_version}</ALPINE_GLIBC_PACKAGE_VERSION>
+                                    <LANG>C.UTF-8</LANG>
+                                </env>
+                                <runCmds>
+                                    <run>ALPINE_GLIBC_BASE_URL="https://github.com/sgerrand/alpine-pkg-glibc/releases/download" &amp;&amp; \
+                                    ALPINE_GLIBC_BASE_PACKAGE_FILENAME="glibc-$ALPINE_GLIBC_PACKAGE_VERSION.apk" &amp;&amp; \
+                                    ALPINE_GLIBC_BIN_PACKAGE_FILENAME="glibc-bin-$ALPINE_GLIBC_PACKAGE_VERSION.apk" &amp;&amp; \
+                                    ALPINE_GLIBC_I18N_PACKAGE_FILENAME="glibc-i18n-$ALPINE_GLIBC_PACKAGE_VERSION.apk" &amp;&amp; \
+                                    apk add --no-cache --virtual=.build-dependencies wget ca-certificates &amp;&amp; \
+                                    wget "https://raw.githubusercontent.com/andyshinn/alpine-pkg-glibc/master/sgerrand.rsa.pub" -O "/etc/apk/keys/sgerrand.rsa.pub" &amp;&amp; \
+                                    wget "$ALPINE_GLIBC_BASE_URL/$ALPINE_GLIBC_PACKAGE_VERSION/$ALPINE_GLIBC_BASE_PACKAGE_FILENAME" "$ALPINE_GLIBC_BASE_URL/$ALPINE_GLIBC_PACKAGE_VERSION/$ALPINE_GLIBC_BIN_PACKAGE_FILENAME" "$ALPINE_GLIBC_BASE_URL/$ALPINE_GLIBC_PACKAGE_VERSION/$ALPINE_GLIBC_I18N_PACKAGE_FILENAME" &amp;&amp; \
+                                    apk add --no-cache "$ALPINE_GLIBC_BASE_PACKAGE_FILENAME" "$ALPINE_GLIBC_BIN_PACKAGE_FILENAME" "$ALPINE_GLIBC_I18N_PACKAGE_FILENAME" &amp;&amp; \
+                                    rm "/etc/apk/keys/sgerrand.rsa.pub" &amp;&amp; /usr/glibc-compat/bin/localedef --force --inputfile POSIX --charmap UTF-8 C.UTF-8 || true &amp;&amp; echo "export LANG=C.UTF-8" &gt; /etc/profile.d/locale.sh &amp;&amp; \
+                                    apk del glibc-i18n &amp;&amp; \
+                                    rm "/root/.wget-hsts" &amp;&amp; \
+                                    apk del .build-dependencies &amp;&amp; \
+                                    rm "$ALPINE_GLIBC_BASE_PACKAGE_FILENAME" "$ALPINE_GLIBC_BIN_PACKAGE_FILENAME" "$ALPINE_GLIBC_I18N_PACKAGE_FILENAME"</run>
+                                </runCmds>
+                            </build>
+                        </image>
+                    </images>
+                </configuration>
+            </plugin>
+        </plugins>
+
+    </build>
+
+
+</project>
